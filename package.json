@@ -1,0 +1,25 @@
+{
+  "name": "pixi-game-ts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "webpack.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack -w --config webpack.config.js",
+    "static": "node src/server/static.js &"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^6.4.5",
+    "babel-loader": "^6.2.2",
+    "json-loader": "^0.5.4",
+    "ts-loader": "^0.8.0",
+    "webpack": "^1.12.12"
+  },
+  "dependencies": {
+    "express": "^4.13.4",
+    "pixi.js": "^3.0.9",
+    "signals": "^1.0.0"
+  }
+}
