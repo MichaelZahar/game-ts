@@ -2,14 +2,14 @@
 
 import { Signal } from 'signals';
 
-export interface IComponentAdded<T> {
+export interface IComponentAdded {
   entity: Entity;
-  addedComponent: T
+  addedComponent: Object
 }
 
-export interface IComponentRemoved<T> {
+export interface IComponentRemoved {
   entity: Entity;
-  removedComponent: T
+  removedComponent: Object
 }
 
 export interface IChildAdded {
@@ -46,7 +46,7 @@ export class Entity {
     this.components = new Map();
   }
 
-  hasComponent<T>(ctr: { new(...args: any[]): T }): boolean {
+  hasComponent(ctr: Function): boolean {
     return !!this.components.get(ctr);
   }
 
@@ -54,10 +54,10 @@ export class Entity {
     return this.components.get(ctr);
   }
 
-  addComponent<T>(component: T): this {
+  addComponent(component: Object): this {
     this.components.set(component.constructor, component);
 
-    const addComponentEvent: IComponentAdded<T> = {
+    const addComponentEvent: IComponentAdded = {
       entity: this,
       addedComponent: component
     };
@@ -67,13 +67,26 @@ export class Entity {
     return this;
   }
 
-  removeComponent<T>(component: T): this {
-    const removedComponentEvent: IComponentRemoved<T> = {
+  removeComponent(component: { new(...args: any[]): Object }): this;
+  removeComponent(component: Object): this;
+  removeComponent(component): this {
+    let componentInstance: Object;
+    let componentConstructor: Function;
+
+    if (component instanceof Function) {
+        componentInstance = this.getComponent(component);
+        componentConstructor = component;
+    } else {
+        componentInstance = component;
+        componentConstructor = component.constructor;
+    }
+
+    const removedComponentEvent: IComponentRemoved = {
       entity: this,
-      removedComponent: component
+      removedComponent: componentInstance
     };
 
-    if (this.components.delete(component.constructor)) {
+    if (this.components.delete(componentConstructor)) {
       this.componentRemoved.dispatch(removedComponentEvent);
     }
 

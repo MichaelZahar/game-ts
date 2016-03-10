@@ -1,5 +1,6 @@
 'use strict';
 
+import { IPoint } from '../components/Position';
 import { ISystem } from '../lib/ecs/ISystem';
 import { Engine } from '../lib/ecs/Engine';
 import { EntityNodeList } from '../lib/ecs/EntityNodeList';
@@ -29,20 +30,20 @@ export class MovementSystem implements ISystem {
       const motion = node.motion;
       const position = node.position;
 
-      position.x += motion.velocityX * time;
-      position.y += motion.velocityY * time;
-
-      if (position.x < 0) {
-        position.x = this.worldWidth + position.x;
-      } else if (position.x > this.worldWidth) {
-        position.x = position.x % this.worldWidth;
-      }
-
-      if (position.y < 0) {
-        position.y = this.worldHeight + position.y;
-      } else if (position.y > this.worldHeight) {
-        position.y = position.y % this.worldHeight;
-      }
+      position.x = getFixed(position.x + motion.velocityX * time, this.worldWidth);
+      position.y = getFixed(position.y + motion.velocityY * time, this.worldHeight);
     });
   }
+}
+
+function getFixed(value: number, maxValue: number): number {
+  if (value < 0) {
+    return maxValue + value;
+  }
+
+  if (value > maxValue) {
+    return value % maxValue;
+  }
+
+  return value;
 }

@@ -33,8 +33,12 @@ export class ComponentMatchingFamily implements IFamily {
     this.removeIfMatch(entity);
   }
 
-  componentRemovedFromEntity = (entity: Entity) => {
-    this.removeIfMatch(entity);
+  componentRemovedFromEntity = (entity: Entity, component: Object) => {
+    const requiredComponent = this.nodeClass.components.indexOf(component.constructor) !== -1;
+
+    if (requiredComponent) {
+      this.removeIfMatch(entity);
+    }
   }
 
   addIfMatch(entity: Entity) {
@@ -48,7 +52,6 @@ export class ComponentMatchingFamily implements IFamily {
       const node = new this.nodeClass(entity);
 
       this.entities.set(entity, node);
-      entity.componentRemoved.add(this.componentRemovedFromEntity);
       this.nodes.add(node);
     }
   }
@@ -56,7 +59,6 @@ export class ComponentMatchingFamily implements IFamily {
   removeIfMatch(entity: Entity) {
     if (this.entities.has(entity)) {
       const node = this.entities.get(entity);
-      entity.componentRemoved.remove(this.componentRemovedFromEntity);
 
       this.entities.delete(entity);
       this.nodes.delete(node);

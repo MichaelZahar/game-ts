@@ -36,7 +36,7 @@ export default function addFighter(engine: Engine, camera: Camera) {
     ))
     .addComponent(new Position(0, 0, 0))
     .addComponent(new HeroControl())
-    .addComponent(new Motion(0.5))
+    .addComponent(new Motion(0.3))
     .addComponent(camera)
     .addChildEntity(fighterLegs);
 

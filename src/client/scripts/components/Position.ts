@@ -46,6 +46,22 @@ export class Position {
     return result;
   }
 
+  /**
+   * center - новая система координат в базовой (с поворотом)
+   * point - точка в базовой системе координат, которую нужно привести
+   * к новой системе координат с центром в center.
+   */
+  static getTranslatePosition(center: Position, point: Position): Position {
+    const cosAngle = Math.cos(center.rotationInRad);
+    const sinAngle = Math.sin(center.rotationInRad);
+
+    return new Position(
+      center.x + point.x * cosAngle - point.y * sinAngle,
+      center.y + point.x * sinAngle - point.y * cosAngle,
+      point.rotation - center.rotation
+    );
+  }
+
   x: number;
   y: number;
   rotation: number = 0;

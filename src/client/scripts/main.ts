@@ -25,7 +25,7 @@ PIXI.loader.add([
   addFighter(engine, camera);
   addBox(engine);
 
-  engine.addSystem(new CameraSystem(worldWidth, worldHeight), 1);
+  engine.addSystem(new CameraSystem(), 1);
   engine.addSystem(new HeroControlSystem(), 2);
   engine.addSystem(new MovementSystem(worldWidth, worldHeight), 3);
   engine.addSystem(new RenderSystem(sceneWidth, sceneHeight, 0xFFFFFF), 10);
@@ -42,5 +42,7 @@ PIXI.loader.add([
   }
 
   tick();
+
+  window.engine = engine;
 });
 

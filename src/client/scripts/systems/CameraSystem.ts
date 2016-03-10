@@ -9,17 +9,12 @@ import { Display } from '../components/Display';
 import { Position } from '../components/Position';
 
 export class CameraSystem implements ISystem {
-  private cameras: EntityNodeList;
-  private objects: EntityNodeList;
+  /*private cameras: EntityNodeList;
+  private objects: EntityNodeList;*/
+  public cameras: EntityNodeList;
+  public objects: EntityNodeList;
 
   public priority: number = 1;
-  public worldWidth: number;
-  public worldHeight: number;
-
-  constructor(worldWidth: number, worldHeight: number) {
-    this.worldWidth = worldWidth;
-    this.worldHeight = worldHeight;
-  }
 
   addToEngine(engine: Engine) {
     this.cameras = engine.getNodeList(CameraNode);
@@ -30,7 +25,7 @@ export class CameraSystem implements ISystem {
     this.cameras = null;
   }
 
-  update(time: number) {
+  update1(time: number) {
     this.cameras.forEach((cameraNode: CameraNode) => {
       if (cameraNode.camera.isRendering) {
         // камера привязана к entity и "наследует" его Positon
@@ -45,7 +40,8 @@ export class CameraSystem implements ISystem {
         const cameraPosition = {
           x: position.x + camera.pointOfView.x - camera.fieldOfView.width / 2,
           y: position.y + camera.pointOfView.y - camera.fieldOfView.height / 2
-        }
+        };
+
         const minX = cameraPosition.x;
         const maxX = cameraPosition.x + camera.fieldOfView.width;
         const minY = cameraPosition.y;
@@ -55,13 +51,18 @@ export class CameraSystem implements ISystem {
           const entity = displayNode.entity;
           const position = Position.getByEntity(displayNode.entity);
           const translatedPosition = {
-            x: getFixed(position.x * cosAngle + position.y * sinAngle - cameraPosition.x * cosAngle - cameraPosition.y * sinAngle, this.worldWidth),
-            y: getFixed(-position.x * sinAngle + position.y * cosAngle + cameraPosition.x * sinAngle - cameraPosition.y * cosAngle, this.worldHeight)
+            x: position.x * cosAngle + position.y * sinAngle - cameraPosition.x * cosAngle - cameraPosition.y * sinAngle,
+            y: -position.x * sinAngle + position.y * cosAngle + cameraPosition.x * sinAngle - cameraPosition.y * cosAngle
           };
+
           const object = displayNode.appearance.object;
           const hitX = position.x <= minX && position.x + object.width >= minX || position.x >= minX && position.x <= maxX;
           const hitY = position.y <= minY && position.y + object.height >= minY || position.y >= minY && position.y <= maxY;
           const isVisible = hitX && hitY;
+
+          if (entity.id === 3) {
+            // console.log(isVisible);
+          }
 
           if (isVisible) {
             if (entity.hasComponent(Display)) {
@@ -78,16 +79,19 @@ export class CameraSystem implements ISystem {
       }
     });
   }
-}
 
-function getFixed(value: number, maxValue: number): number {
-  if (value < 0) {
-    return maxValue + value;
+  update(time: number) {
+    this.cameras.forEach((cameraNode: CameraNode) => {
+      const camera = cameraNode.camera;
+
+      if (camera.isRendering) {
+        // получаем позицию камеры в базовой системе координат
+         const cameraPosition = Position.getByEntity(cameraNode.entity);
+
+         this.objects.forEach((displayNode: DisplayNode) => {
+           const positionInCamera = Position.getTranslatePosition(cameraPosition, Position.getByEntity(displayNode.entity));
+         });
+      }
+    })
   }
-
-  if (value > maxValue) {
-    return value % maxValue;
-  }
-
-  return value;
 }

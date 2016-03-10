@@ -1,12 +1,12 @@
 import { Entity } from './Entity';
 
 export interface IEntityNodeStatic {
-  components: { new(...args: any[]): Object }[];
+  components: Function[];
   new(entity: Entity): EntityNode;
 }
 
 export class EntityNode {
-  static components: { new(...args: any[]): Object }[] = [];
+  static components: Function[] = [];
   public entity: Entity;
 
   constructor(entity: Entity) {

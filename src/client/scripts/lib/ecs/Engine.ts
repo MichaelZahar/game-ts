@@ -53,13 +53,13 @@ export class Engine {
     this.entityList.forEach(this.removeEntity);
   }
 
-  componentAdded = <T>(event: IComponentAdded<T>) => {
+  componentAdded = (event: IComponentAdded) => {
     this.families.forEach((family, nodeObject) => {
       family.componentAddedToEntity(event.entity, event.addedComponent);
     });
   }
 
-  componentRemoved = <T>(event: IComponentRemoved<T>) => {
+  componentRemoved = (event: IComponentRemoved) => {
     this.families.forEach((family, nodeObject) => {
       family.componentRemovedFromEntity(event.entity, event.removedComponent);
     });
