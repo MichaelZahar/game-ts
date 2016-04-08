@@ -1,6 +1,5 @@
 'use strict';
 
-import { IPoint } from '../components/Position';
 import { ISystem } from '../lib/ecs/ISystem';
 import { Engine } from '../lib/ecs/Engine';
 import { EntityNodeList } from '../lib/ecs/EntityNodeList';
@@ -10,11 +9,13 @@ export class MovementSystem implements ISystem {
   private nodes: EntityNodeList;
   private worldWidth: number;
   private worldHeight: number;
+  private endless: boolean;
   public priority: number = 3;
 
-  constructor(worldWidth: number, worldHeight: number) {
+  constructor(worldWidth: number, worldHeight: number, endless?: boolean) {
     this.worldWidth = worldWidth;
     this.worldHeight = worldHeight;
+    this.endless = endless || false;
   }
 
   addToEngine(engine: Engine) {
@@ -29,9 +30,16 @@ export class MovementSystem implements ISystem {
     this.nodes.forEach((node) => {
       const motion = node.motion;
       const position = node.position;
+      const x = Math.round(position.x + motion.velocityX * time / 1000);
+      const y = Math.round(position.y + motion.velocityY * time / 1000);
 
-      position.x = getFixed(position.x + motion.velocityX * time, this.worldWidth);
-      position.y = getFixed(position.y + motion.velocityY * time, this.worldHeight);
+      if (this.endless) {
+        position.x = getFixed(x, this.worldWidth);
+        position.y = getFixed(y, this.worldHeight);
+      } else {
+        position.x = Math.max(0, Math.min(x, this.worldWidth));
+        position.y = Math.max(0, Math.min(y, this.worldHeight));
+      }
     });
   }
 }

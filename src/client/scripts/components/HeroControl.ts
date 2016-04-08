@@ -11,7 +11,7 @@ export class HeroControl {
   attack: number = 35;
   run: number = 90;
   reload: number = 100;
-  rotationSpeed: number = 0.4;
+  rotationSpeed: number = 360;
   turned: boolean = false;
 
   constructor(left?: number, up?: number, right?: number, down?: number, attack?: number, run?: number, reload?: number, rotationSpeed?: number) {

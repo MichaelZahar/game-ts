@@ -2,7 +2,6 @@
 
 import * as PIXI from 'pixi.js';
 import { Engine } from './lib/ecs/Engine';
-import { CameraSystem } from './systems/CameraSystem';
 import { HeroControlSystem } from './systems/HeroControlSystem';
 import { MovementSystem } from './systems/MovementSystem';
 import { RenderSystem } from './systems/RenderSystem';
@@ -20,14 +19,19 @@ PIXI.loader.add([
   const worldHeight = 5000;
   const sceneWidth = 1600;
   const sceneHeight = 900;
-  const camera = new Camera(true, { width: sceneWidth, height: sceneHeight }, { x: 0, y: 0 });
+  const camera = new Camera({
+    fieldOfView: { width: sceneWidth, height: sceneHeight }
+    // rotation: 90
+    // followRotation: true
+  });
 
   addFighter(engine, camera);
   addBox(engine);
+  addBox(engine, -200, 300);
+  addBox(engine, 200, 500);
 
-  engine.addSystem(new CameraSystem(), 1);
   engine.addSystem(new HeroControlSystem(), 2);
-  engine.addSystem(new MovementSystem(worldWidth, worldHeight), 3);
+  engine.addSystem(new MovementSystem(worldWidth, worldHeight, true), 3);
   engine.addSystem(new RenderSystem(sceneWidth, sceneHeight, 0xFFFFFF), 10);
 
   let now = Date.now();
@@ -42,7 +46,5 @@ PIXI.loader.add([
   }
 
   tick();
-
-  window.engine = engine;
 });
 

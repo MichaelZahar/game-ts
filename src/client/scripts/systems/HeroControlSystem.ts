@@ -53,11 +53,11 @@ export class HeroControlSystem implements ISystem {
     }
 
     if (leftRotation) {
-      position.rotation -= heroControl.rotationSpeed * time;
+      position.rotation -= Math.round(heroControl.rotationSpeed * time / 1000);
     }
 
     if (rightRotation) {
-      position.rotation += heroControl.rotationSpeed * time;
+      position.rotation += Math.round(heroControl.rotationSpeed * time / 1000)  ;
     }
 
     position.rotation = position.rotation % 360;
@@ -69,14 +69,15 @@ export class HeroControlSystem implements ISystem {
     const motion = node.motion;
     const move = this.state[heroControl.up];
     const back = this.state[heroControl.down];
-    const rad = position.rotationInRad;
+    const cos = Math.cos(position.rotationInRad);
+    const sin = Math.sin(position.rotationInRad);
 
     if (back) {
-      motion.velocityX = -motion.velocity / 2 * Math.cos(rad);
-      motion.velocityY = -motion.velocity / 2 * Math.sin(rad);
+      motion.velocityX = -motion.velocity / 2 * cos;
+      motion.velocityY = -motion.velocity / 2 * sin;
     } else if (move) {
-      motion.velocityX = motion.velocity * Math.cos(rad);
-      motion.velocityY = motion.velocity * Math.sin(rad);
+      motion.velocityX = motion.velocity * cos;
+      motion.velocityY = motion.velocity * sin;
     } else {
       motion.velocityX = motion.velocityY = 0;
     }

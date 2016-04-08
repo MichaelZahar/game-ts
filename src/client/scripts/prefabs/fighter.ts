@@ -1,6 +1,6 @@
 import { Entity } from '../lib/ecs/Entity';
 import { Engine } from '../lib/ecs/Engine';
-import { Appearance, AppearanceType } from '../components/Appearance';
+import { Display, DisplayType } from '../components/Display';
 import { Camera } from '../components/Camera';
 import { HeroControl } from '../components/HeroControl';
 import { Motion } from '../components/Motion';
@@ -11,8 +11,8 @@ export default function addFighter(engine: Engine, camera: Camera) {
   const fighterLegs = new Entity();
 
   fighterLegs
-    .addComponent(new Appearance(
-      AppearanceType.MovieClip,
+    .addComponent(new Display(
+      DisplayType.MovieClip,
       {
         zOrder: 1,
         pattern: 'feet/run/survivor-run_%d.png',
@@ -24,8 +24,8 @@ export default function addFighter(engine: Engine, camera: Camera) {
     //.addComponent(new Position(-16, -4, 0));
 
   fighter
-    .addComponent(new Appearance(
-      AppearanceType.MovieClip,
+    .addComponent(new Display(
+      DisplayType.MovieClip,
       {
         zOrder: 2,
         pattern: 'handgun/move/survivor-move_handgun_%d.png',
@@ -36,7 +36,7 @@ export default function addFighter(engine: Engine, camera: Camera) {
     ))
     .addComponent(new Position(0, 0, 0))
     .addComponent(new HeroControl())
-    .addComponent(new Motion(0.3))
+    .addComponent(new Motion(300))
     .addComponent(camera)
     .addChildEntity(fighterLegs);
 

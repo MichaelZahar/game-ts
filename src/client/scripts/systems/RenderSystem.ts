@@ -1,8 +1,9 @@
 /// <reference path="../../../../typings/tsd.d.ts" />
 
 import * as PIXI from 'pixi.js';
-import { Position } from '../components/Position';
+import { CameraNode } from '../nodes/CameraNode';
 import { RenderNode } from '../nodes/RenderNode';
+import { Position } from '../components/Position';
 import { EntityNodeList } from '../lib/ecs/EntityNodeList';
 import { Engine } from '../lib/ecs/Engine';
 import { ISystem } from '../lib/ecs/ISystem';
@@ -12,7 +13,8 @@ export class RenderSystem implements ISystem {
 
   private renderer: PIXI.WebGLRenderer | PIXI.CanvasRenderer;
   private resizeTimeoutId: number;
-  private nodes: EntityNodeList;
+  private cameras: EntityNodeList;
+  private objects: EntityNodeList;
 
   public priority: number = 10;
   public zOrders: { zOrder: number, container: PIXI.Container }[] = [];
@@ -35,18 +37,19 @@ export class RenderSystem implements ISystem {
   }
 
   addToEngine(engine: Engine) {
-    this.nodes = engine.getNodeList(RenderNode);
+    this.cameras = engine.getNodeList(CameraNode);
+    this.objects = engine.getNodeList(RenderNode);
 
-    this.nodes.forEach(this.addToDisplay);
+    this.objects.forEach(this.addToDisplay);
 
-    this.nodes.nodeAdded.add(this.addToDisplay);
-    this.nodes.nodeRemoved.add(this.removeFromDisplay);
+    this.objects.nodeAdded.add(this.addToDisplay);
+    this.objects.nodeRemoved.add(this.removeFromDisplay);
   }
 
   removeFromEngine(engine: Engine) {
-    this.nodes.nodeAdded.remove(this.addToDisplay);
-    this.nodes.nodeRemoved.remove(this.removeFromDisplay);
-    this.nodes = null;
+    this.objects.nodeAdded.remove(this.addToDisplay);
+    this.objects.nodeRemoved.remove(this.removeFromDisplay);
+    this.objects = null;
   }
 
   private getZOrderContainer(zOrder: number) {
@@ -73,23 +76,17 @@ export class RenderSystem implements ISystem {
   }
 
   addToDisplay = (node: RenderNode) => {
-    const appearance = node.appearance;
-    const object = appearance.object;
-    const pivot = appearance.options.pivot;
-    const zOrder = appearance.options.zOrder || 0;
-
-    if (!!pivot) {
-      const pivot = appearance.options.pivot;
-      object.pivot = new PIXI.Point(pivot.x, pivot.y);
-    }
+    const display = node.display;
+    const object = display.object;
+    const zOrder = display.options.zOrder || 0;
 
     this.getZOrderContainer(zOrder).addChild(object);
   }
 
   removeFromDisplay = (node: RenderNode) => {
-    const appearance = node.appearance;
-    const zOrder = appearance.options.zOrder;
-    const object = appearance.object;
+    const display = node.display;
+    const zOrder = display.options.zOrder;
+    const object = display.object;
 
     this.getZOrderContainer(zOrder).removeChild(object);
   }
@@ -126,15 +123,43 @@ export class RenderSystem implements ISystem {
     }, 300);
   }
 
-  update(time: number) {
-    this.nodes.forEach((node) => {
-      const object = node.appearance.object;
-      const display = node.display;
-      const position = Position.getByEntity(node.entity);
+  private getCameraOPoint(node: CameraNode): Position {
+    const camera = node.camera;
+    const cameraPosition = Position.getByEntity(node.entity);
+    const cameraO = new Position(
+      camera.pointOfView.x - camera.fieldOfView.width / 2,
+      camera.pointOfView.y - camera.fieldOfView.height / 2
+    );
+    const rotation = (camera.followRotation) ? (camera.rotation + cameraPosition.rotation) % 360 : camera.rotation;
+    const rotationInRad = rotation * Math.PI / 180;
+    const cos = Math.cos(rotationInRad);
+    const sin = Math.sin(rotationInRad);
 
-      object.x = display.x;
-      object.y = display.y;
-      object.rotation = position.rotationInRad;
+    return new Position(
+      cameraPosition.x + cameraO.x * cos - cameraO.y * sin,
+      cameraPosition.y + cameraO.x * sin + cameraO.y * cos,
+      rotation
+    );
+  }
+
+  update(time: number) {
+    this.cameras.forEach((cameraNode: CameraNode) => {
+      if (cameraNode.camera.isRendering) {
+        const oPoint = this.getCameraOPoint(cameraNode);
+        const cos = Math.cos(oPoint.rotationInRad);
+        const sin = Math.sin(oPoint.rotationInRad);
+
+        this.objects.forEach((renderNode: RenderNode) => {
+          const position = Position.getByEntity(renderNode.entity);
+          const object = renderNode.display.object;
+
+          object.position.set(
+            getFixed(position.x * cos + position.y * sin - oPoint.x * cos - oPoint.y * sin, 5000),
+            getFixed(-position.x * sin + position.y * cos + oPoint.x * sin - oPoint.y * cos, 5000)
+          );
+          object.rotation = ((position.rotation - oPoint.rotation) % 360) * Math.PI / 180;
+        });
+      }
     });
 
     this.render();
@@ -143,4 +168,16 @@ export class RenderSystem implements ISystem {
   render() {
     this.renderer.render(this.stage);
   }
+}
+
+function getFixed(value: number, maxValue: number): number {
+  if (value < 0) {
+    return maxValue + value;
+  }
+
+  if (value > maxValue) {
+    return value % maxValue;
+  }
+
+  return value;
 }

@@ -14,6 +14,7 @@ export interface IAppearance {
   image?: string;
   width?: number;
   height?: number;
+  rotation?: number;
   pattern?: string;
   frames?: string[];
   animationSpeed?: number;
@@ -23,6 +24,7 @@ export interface IAppearance {
 export interface ISprite {
   image: string;
   zOrder?: number;
+  rotation?: number;
   pivot?: IPoint;
 }
 
@@ -31,6 +33,7 @@ export interface ITilingSprite {
   width: number;
   height: number;
   zOrder?: number;
+  rotation?: number;
   pivot?: IPoint;
 }
 
@@ -38,8 +41,9 @@ export interface IMovieClip {
   pattern: string;
   frames: string[];
   zOrder?: number;
-  animationSpeed?: number;
+  rotation?: number;
   pivot?: IPoint;
+  animationSpeed?: number;
 }
 
 export class Appearance {
@@ -63,6 +67,14 @@ export class Appearance {
 
   get height(): number {
     return this.object.height;
+  }
+
+  get rotation(): number {
+    return this.options.rotation || 0;
+  }
+
+  get rotationInRad(): number {
+    return this.rotation * Math.PI / 180;
   }
 }
 
